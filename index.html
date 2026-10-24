@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>المعلّم الذكي</title>
+<style>
+body{margin:0;font-family:Tahoma,Arial;background:#f0f4fa;color:#172554}
+header{background:#155eef;color:white;text-align:center;padding:25px 12px}
+header h1{margin:0 0 8px}
+main{max-width:700px;margin:22px auto;padding:16px}
+.card{background:white;border-radius:18px;padding:20px;box-shadow:0 5px 20px #0001}
+label{display:block;margin:12px 0 8px;font-weight:bold}
+select,textarea,button{box-sizing:border-box;width:100%;padding:13px;border-radius:10px;font:inherit}
+select,textarea{border:1px solid #cbd5e1;background:white}
+textarea{min-height:120px;resize:vertical}
+button{margin-top:12px;border:0;background:#155eef;color:white;font-weight:bold;cursor:pointer}
+button:disabled{opacity:.6}
+#answer{white-space:pre-wrap;line-height:1.9;margin-top:18px}
+.small{color:#64748b;font-size:13px}
+</style>
+</head>
+<body>
+<header>
+<h1>🎓 المعلّم الذكي</h1>
+<div>مساعدك في فهم مواد المرحلة الإعدادية</div>
+</header>
+<main>
+<div class="card">
+<label for="subject">اختار المادة</label>
+<select id="subject">
+<option>اللغة العربية</option><option>اللغة الإنجليزية</option>
+<option>الرياضيات</option><option>العلوم</option>
+<option>الدراسات الاجتماعية</option><option>الكمبيوتر</option>
+<option>أخرى</option>
+</select>
+<label for="question">اكتب سؤالك أو الدرس اللي محتاج تفهمه</label>
+<textarea id="question" placeholder="مثال: اشرح لي قانون مساحة المثلث بطريقة سهلة..."></textarea>
+<button id="send" onclick="askTeacher()">اسأل المعلّم الذكي</button>
+<div id="answer" aria-live="polite"></div>
+<p class="small">تحتاج الخدمة إلى اتصال بالإنترنت ومفتاح Gemini صالح على السيرفر.</p>
+</div>
+</main>
+<script>
+async function askTeacher(){
+ const question=document.getElementById('question').value.trim();
+ const subject=document.getElementById('subject').value;
+ const answer=document.getElementById('answer');
+ const button=document.getElementById('send');
+ if(!question){answer.textContent='اكتب سؤالك الأول.';return;}
+ button.disabled=true;
+ answer.textContent='جاري التفكير والإجابة...';
+ try{
+  const response=await fetch('/ask',{
+   method:'POST',
+   headers:{'Content-Type':'application/json'},
+   body:JSON.stringify({question:'المادة: '+subject+'\nسؤال الطالب: '+question})
+  });
+  const data=await response.json();
+  if(!response.ok) throw new Error(data.error||'حصل خطأ في الطلب.');
+  answer.textContent=data.answer||'لم تصل إجابة.';
+ }catch(error){
+  answer.textContent='تعذر الاتصال: '+error.message+'\nتأكد أن السيرفر يعمل وأن الإنترنت متصل.';
+ }finally{button.disabled=false;}
+}
+</script>
+</body>
+</html>
